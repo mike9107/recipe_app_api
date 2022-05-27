@@ -16,7 +16,7 @@ def create_user(**params):
     return get_user_model().objects.create_user(**params)
 
 
-class PublicUserApiTests(TestCase):
+class PublicUserAPITests(TestCase):
     """Test the public features of the user API."""
 
     def setUp(self):
@@ -55,7 +55,13 @@ class PublicUserApiTests(TestCase):
         }
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        user_exists = get_user_model().objects.filter(email=payload["email"]).exists()
+        user_exists = (
+            get_user_model()
+            .objects.filter(
+                email=payload["email"],
+            )
+            .exists()
+        )
         self.assertFalse(user_exists)
 
     def test_create_token_for_user(self):
@@ -82,6 +88,13 @@ class PublicUserApiTests(TestCase):
         self.assertNotIn("token", res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_create_token_email_not_found(self):
+        """Test error returned if user not found for given email."""
+        payload = {"email": "test@example.com", "password": "pass123"}
+        res = self.client.post(TOKEN_URL, payload)
+        self.assertNotIn("token", res.data)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_create_token_blank_password(self):
         """Test return an error if password is blank."""
         payload = {"email": "test@example.com", "password": ""}
@@ -95,7 +108,7 @@ class PublicUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class PrivateUserApiTests(TestCase):
+class PrivateUserAPITests(TestCase):
     """Test API requests that require authentication."""
 
     def setUp(self):
@@ -109,7 +122,13 @@ class PrivateUserApiTests(TestCase):
         """Test retrieving profile for logged in user."""
         res = self.client.get(ME_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, {"name": self.user.name, "email": self.user.email})
+        self.assertEqual(
+            res.data,
+            {
+                "name": self.user.name,
+                "email": self.user.email,
+            },
+        )
 
     def test_post_me_not_allowed(self):
         """Test that POST is not allowed on the me endpoint."""

@@ -19,6 +19,7 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+      - SECRET_KEY=c"-0w&bc!o!z=*5zqig8os=%+_&-r--vf8_zsh6&67l16e&rsbg0"
     depends_on:
       - db
 
